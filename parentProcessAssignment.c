@@ -1,12 +1,15 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <dirent.h>
+# include <unistd.h>
+# include <sys/wait.h>
 
 # include "addHistory.c"
 
 # define MAX_LENGTH 1000
 
-struct dirent* searchInPath(char* command, char* environments);
+char* trimwhitespace(char *str);
+char* searchInPath(char* command, char* environments);
 // Syntax for Add History : addHistory(history, choice, &historyArrayLength, &historyArrayStartPosition);
 
 int main(){
@@ -15,7 +18,9 @@ int main(){
 	char *cmdLineArgs, *allArgs[100];
 	int allArgsLength = 0, historyArrayLength = 0, historyArrayStartPosition = 0, historyInt;
 	char history[MAX_LENGTH][1000];
-	struct dirent * executableCommandFile;
+	char * executableCommandFilePath;
+	pid_t childForExecutingCommands, terminatedChild;
+	int terminationStatus;
 
 	//gets the environment from the environment variable $MYPATH
 	getEnvironments = getenv("MYPATH");
@@ -25,6 +30,7 @@ int main(){
 		//gets the comands from the user.
 		printf(">>> ");
 		fgets(choice, 1000, stdin); 
+		allArgsLength = 0;
 
 		//store the command in the history and increment the length of the array by 1. If the length reaches 1000, increment the start
 		//counter by 1.
@@ -39,7 +45,10 @@ int main(){
 			cmdLineArgs = strtok(NULL, " ");
 			allArgsLength++;
 		}
-
+		allArgs[allArgsLength-1] = trimwhitespace(allArgs[allArgsLength-1]);
+		allArgs[allArgsLength] = NULL;
+		allArgsLength++;
+		
 		//printf("%s\n",allArgs[0]);
 		//checks if the user types in exit ot quit
 		if(((strncmp(allArgs[0],"quit",4)==0)||(strncmp(allArgs[0],"exit",4)==0))&&(strlen(allArgs[0])==5)){
@@ -72,13 +81,39 @@ int main(){
 		}
 
 
-		//get the command's executable from the path if it exists.
-		executableCommandFile = searchInPath(allArgs[0], getEnvironments);
+		for(int i=0; i<allArgsLength; i++){
+			printf("%d %s\n", i, allArgs[i]);
+		}
 
-		if(executableCommandFile == NULL)
+		//get the command's executable from the path if it exists.
+		executableCommandFilePath = searchInPath(allArgs[0], getEnvironments);
+		if(executableCommandFilePath != NULL)
+			executableCommandFilePath = trimwhitespace(executableCommandFilePath);
+
+		if(executableCommandFilePath == NULL)
 			printf("Command not found %s", allArgs[0]);
-		else
-			printf( "found %s \n", executableCommandFile->d_name );
+		else{
+			printf( "found %s \n", executableCommandFilePath );
+
+			childForExecutingCommands = fork();
+			
+			if(childForExecutingCommands<0){
+				printf("Error, couldn't fork a child.\n");
+			}
+
+			if(childForExecutingCommands==0){
+				printf("I am in Child!\n");
+				execv(executableCommandFilePath, allArgs);
+				printf("Exec troubles\n");
+				return 12;
+			}
+			else{
+				printf("In Parent, child's PID %d !\n", childForExecutingCommands);
+				terminatedChild = wait( &terminationStatus );
+				printf("Child Terminated %d \n", terminatedChild);
+
+			}
+		}
 
 
 	}
@@ -87,9 +122,9 @@ int main(){
 
 
 
-struct dirent * searchInPath(char *command, char* environments){
+char * searchInPath(char *command, char* environments){
 	
-	char *environmentsTokenized[100];   //stores all the paths in a char *, and array of all the paths in the MYPATH variable
+	char *environmentsTokenized[100], tempToReturnPath[1000];   //stores all the paths in a char *, and array of all the paths in the MYPATH variable
 	char *environmentsSeperate;			//intermediate variable, which is of no use after the parsing of paths is done.
 	int environmentsLength = 0;			//The length of the paths array. The total number of paths in MYPATH.
 	DIR * dir;
@@ -119,7 +154,7 @@ struct dirent * searchInPath(char *command, char* environments){
 		
 		while ( ( file = readdir( dir ) ) != NULL ){
 			//printf("%lu %lu\n", strlen(command), strlen(file->d_name) );
-			if((strncmp(command, file->d_name, strlen(command)-1)==0)&&(strlen(command)-1 == strlen(file->d_name))){
+			if((strncmp(command, file->d_name, strlen(command)-1)==0)&&(strlen(command) == strlen(file->d_name))){
 				//if it finds the executable of the command in any of the folders, break.
 				break;
 			}
@@ -129,11 +164,35 @@ struct dirent * searchInPath(char *command, char* environments){
 			return NULL;
 		}
 		else{
-			//printf( "found %s \n", file->d_name );
-			return file;
+			
+			//return file;
+			strcpy(tempToReturnPath, environmentsTokenized[i]);
+			strcat(tempToReturnPath, "/");
+			strcat(tempToReturnPath, command);
+			return tempToReturnPath;
 		}
 
 	}
 	return NULL;
+}
+
+char *trimwhitespace(char *str)
+{
+	char *end;
+
+	// Trim leading space
+	while(isspace(*str)) str++;
+
+	if(*str == 0)  // All spaces?
+		return str;
+
+	// Trim trailing space
+	end = str + strlen(str) - 1;
+	while(end > str && isspace(*end)) end--;
+
+	// Write new null terminator
+	*(end+1) = 0;
+
+	return str;
 }
 
