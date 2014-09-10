@@ -1,14 +1,14 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <dirent.h>
-# include <unistd.h>
-# include <sys/wait.h>
 
+# include "processesManagement.c"
 # include "addHistory.c"
 
 # define MAX_LENGTH 1000
 
-char* searchInPath(char* command, char* environments);
+
+
 // Syntax for Add History : addHistory(history, choice, &historyArrayLength, &historyArrayStartPosition);
 
 int main(){
@@ -23,7 +23,7 @@ int main(){
 
 	//gets the environment from the environment variable $MYPATH
 	getEnvironments = getenv("MYPATH");
-
+	
 	while(1){
 		
 		//gets the comands from the user.
@@ -153,26 +153,21 @@ int main(){
 		if(executableCommandFilePath == NULL)
 			printf("Command not found %s", allArgs[0]);
 		else{
-			printf( "found %s \n", executableCommandFilePath );
 
-			childForExecutingCommands = fork();
-			
-			if(childForExecutingCommands<0){
-				printf("Error, couldn't fork a child.\n");
-			}
+			if(strncmp(allArgs[allArgsLength-2], "&", 1)==0){
+				
+				printf("Background process!!\n");
+				allArgs[allArgsLength-2] = NULL;
+				--allArgsLength;
 
-			if(childForExecutingCommands==0){
-				printf("I am in Child!\n");
-				execv(executableCommandFilePath, allArgs);
-				printf("Exec troubles\n");
-				return 12;
+				backgroundProcess(executableCommandFilePath, allArgs);
+				
 			}
 			else{
-				printf("In Parent, child's PID %d !\n", childForExecutingCommands);
-				terminatedChild = wait( &terminationStatus );
-				printf("Child Terminated %d \n", terminatedChild);
 
+				foregroundProcess(executableCommandFilePath, allArgs);
 			}
+			
 		}
 
 
