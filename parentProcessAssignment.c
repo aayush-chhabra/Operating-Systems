@@ -54,6 +54,7 @@ int main(){
 		}
 
 		for(int i = 0; i<allArgsLength-1; i++){
+			
 			if(strncmp(allArgs[i], ">", strlen(allArgs[i])) == 0){
 				printf("Redirect to file.\n");
 
@@ -67,10 +68,32 @@ int main(){
 				for(int i=0; i<allArgsLength; i++){
 					printf("%s\n", allArgs[i]);
 				}
-				
+
 			}
 			else if(strncmp(allArgs[i], "<", strlen(allArgs[i])) == 0){
 				printf("Redirect from file.\n");
+				if(allArgs[i+1]!=NULL){
+					printf("%s\n", allArgs[i+1]);
+					int file = open(allArgs[i+1], O_RDONLY, 0660);
+					//printf("File Descriptor : %d\n", file);
+					char tempBuffer[100];
+					int sizeOfFile = read(file, tempBuffer, 100);
+					//printf("%s %d\n", tempBuffer, sizeOfFile);
+
+					//memset(choice, 0, 1000);
+					//printf("%s %d\n", tempBuffer, sizeOfFile);
+
+					char * tempString = (char*)malloc(1000*sizeof(char));
+					for(int j=0; j<i; j++){
+						strcat(tempString, allArgs[j]);
+						strcat(tempString, " ");
+					}
+
+					strcat(tempString, tempBuffer);
+					strcpy(choice, tempString);
+					//printf(" temp string: %s\n", choice);
+					goto rebuildCommand;
+				}
 				
 			}
 			else if(strncmp(allArgs[i], ">>", strlen(allArgs[i])) == 0){

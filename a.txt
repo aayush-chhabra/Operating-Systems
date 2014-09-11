@@ -1,14 +1,1 @@
-found /bin/ls 
-In Parent, child's PID 56925 !
-I am in Child!
-total 96
--rw-r--r--  1 aayush  staff      0 Sep  7 12:39 README.md
--rwxr-xr-x  1 aayush  staff  14408 Sep 11 12:20 a.out
--rw-r-----  1 aayush  staff    217 Sep 11 12:20 a.txt
--rw-r--r--  1 aayush  staff   3380 Sep 10 16:31 addHistory.c
--rw-r--r--  1 aayush  staff    349 Sep 10 16:31 addHistory.h
--rw-r--r--  1 aayush  staff    451 Sep  8 23:31 forkAndExec.c
--rw-r--r--  1 aayush  staff   5269 Sep 11 12:20 parentProcessAssignment.c
--rw-r--r--  1 aayush  staff   1953 Sep 11 11:17 processesManagement.c
--rw-r--r--  1 aayush  staff    318 Sep 11 10:17 processesManagement.h
-Child Terminated 56925 
+-al
