@@ -8,15 +8,12 @@
 # define MAX_LENGTH 1000
 
 
-
-// Syntax for Add History : addHistory(history, choice, &historyArrayLength, &historyArrayStartPosition);
-
 int main(){
 	
 	char choice[1000], *getEnvironments, secondCharTest, exclaimationString[100], *tempString;
 	char *cmdLineArgs, *allArgs[100], *historyPrint;
 	int allArgsLength = 0, historyArrayLength = 0, historyArrayStartPosition = 0, historyInt;
-	char history[MAX_LENGTH][1000];
+	char history[MAX_LENGTH][1000], *redirectToFilePath;
 	char * executableCommandFilePath;
 	pid_t childForExecutingCommands, terminatedChild;
 	int terminationStatus, errorCheck;
@@ -24,14 +21,14 @@ int main(){
 	//gets the environment from the environment variable $MYPATH
 	getEnvironments = getenv("MYPATH");
 	
-	while(1){
-		
+	while(1){	
 		//gets the comands from the user.
 		printf(">>> ");
 		fgets(choice, 1000, stdin);
-		rebuildCommand: 
+		rebuildCommand:
+		redirectToFilePath = NULL;
 		allArgsLength = 0;
-
+		signal(SIGCHLD, SIG_DFL);
 		//store the command in the history and increment the length of the array by 1. If the length reaches 1000, increment the start
 		//counter by 1.
 		if(strncmp(choice,"!",1)!=0){
@@ -56,21 +53,38 @@ int main(){
 			exit(0);
 		}
 
+		for(int i = 0; i<allArgsLength-1; i++){
+			if(strncmp(allArgs[i], ">", strlen(allArgs[i])) == 0){
+				printf("Redirect to file.\n");
+				printf("%s\n", allArgs[i+1]);	
+				if(allArgs[i+1]!=NULL){
+					redirectToFilePath = (char *)malloc(sizeof(allArgs[i+1]));	
+					strcpy(redirectToFilePath, allArgs[i+1]);
+				}
+				
+			}
+			if(strncmp(allArgs[i], "<", strlen(allArgs[i])) == 0){
+				printf("Redirect from file.\n");
+				
+			}
+			if(strncmp(allArgs[i], ">>", strlen(allArgs[i])) == 0){
+				printf("Append to File\n");
+				
+			}
+		}
 		
 
 		if((strncmp(allArgs[0],"!",1)==0)){
+			
 			secondCharTest = allArgs[0][1];
+			
 			if(secondCharTest == '!'){
-				//allArgs[0] = trimwhitespace(history[historyArrayLength-1]);
-				//strcat(history[historyArrayLength-1], "\n");
-				//strcpy(allArgs[0], history[historyArrayLength-1]);
-				//addHistory(history, history[historyArrayLength-1], &historyArrayLength, &historyArrayStartPosition);
 				strcpy(choice, history[historyArrayLength-1]);
 				goto rebuildCommand;
 				
 			}
+
 			else if(isalpha(secondCharTest)){
-				//printf("Alphabet found\n");
 				sscanf(allArgs[0], "!%s", &exclaimationString);
 				if((tempString = searchHistory(history, historyArrayLength, historyArrayStartPosition, exclaimationString))!=NULL){
 					strcpy(choice, tempString);
@@ -80,17 +94,8 @@ int main(){
 					printf("Command not found.\n");
 					continue;
 				}
-
-				//allArgs[0] = trimwhitespace(exclaimationString);
-				//addHistory(history, history[historyArrayLength-1], &historyArrayLength, &historyArrayStartPosition);
-				//printf("%s\n", exclaimationString);
-
-				//allArgs[0] = trimwhitespace(history[historyArrayLength-1]);
-				//strcat(history[historyArrayLength-1], "\n");
-				//strcpy(allArgs[0], history[historyArrayLength-1]);
-				//addHistory(history, history[historyArrayLength-1], &historyArrayLength, &historyArrayStartPosition);
-				
 			}
+
 			else if(isdigit(secondCharTest)){
 				sscanf(allArgs[0], "!%d", &historyInt);
 				if(historyInt<historyArrayLength)
@@ -141,13 +146,11 @@ int main(){
 			continue;
 		}
 
-		
-		//printf("before !! %s ------------------------>>>>>\n", allArgs[0]);
 		//get the command's executable path from the paths in env
 		executableCommandFilePath = searchInPath(allArgs[0], getEnvironments);
 		if(executableCommandFilePath != NULL){
 			executableCommandFilePath = trimwhitespace(executableCommandFilePath);
-			//printf("In here!! %s -----------------\n", allArgs[0]);
+
 		}
 
 		if(executableCommandFilePath == NULL)
@@ -160,12 +163,13 @@ int main(){
 				allArgs[allArgsLength-2] = NULL;
 				--allArgsLength;
 
-				backgroundProcess(executableCommandFilePath, allArgs);
+
+				backgroundProcess(executableCommandFilePath, allArgs, redirectToFilePath);
 				
 			}
 			else{
-
-				foregroundProcess(executableCommandFilePath, allArgs);
+				
+				foregroundProcess(executableCommandFilePath, allArgs, redirectToFilePath);
 			}
 			
 		}

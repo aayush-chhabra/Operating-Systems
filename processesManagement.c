@@ -1,7 +1,4 @@
-# include <unistd.h>
-# include <signal.h>
-# include <sys/wait.h>
-
+# include "processesManagement.h"
 
 void childTermination()
 {
@@ -18,13 +15,17 @@ void childTermination()
 			else
 				printf ("[process %d completed]\n", pid);
 		}
+		
 }
 
-int foregroundProcess(char * executableCommandFilePath, char* allArgs[100]){
+int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath){
 
 	pid_t childForExecutingCommands, terminatedChild;
 	int terminationStatus;
 	
+	if(redirectToFilePath != NULL){
+		printf("Write your code here..\n");
+	}
 	
 	printf( "found %s \n", executableCommandFilePath );
 
@@ -49,11 +50,17 @@ int foregroundProcess(char * executableCommandFilePath, char* allArgs[100]){
 	}
 }
 
-int backgroundProcess(char * executableCommandFilePath, char* allArgs[100]){
+int backgroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath){
 
 	pid_t childForExecutingCommands, terminatedChild;
 	int terminationStatus;
 	
+	if(redirectToFilePath != NULL){
+		printf("Write your code here..\n");
+	}
+	
+
+
 	signal (SIGCHLD, childTermination);
 	printf( "found %s \n", executableCommandFilePath );
 
