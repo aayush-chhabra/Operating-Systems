@@ -15,16 +15,19 @@ void childTermination()
 			else
 				printf ("[process %d completed]\n", pid);
 		}
-		
+
 }
 
 int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath){
 
 	pid_t childForExecutingCommands, terminatedChild;
-	int terminationStatus;
+	int terminationStatus, file, stdoutCopy;
 	
 	if(redirectToFilePath != NULL){
 		printf("Write your code here..\n");
+		stdoutCopy = dup(1);
+		close(1);
+		file = open( redirectToFilePath, O_RDWR | O_CREAT, 0660);
 	}
 	
 	printf( "found %s \n", executableCommandFilePath );
@@ -46,7 +49,8 @@ int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char
 		printf("In Parent, child's PID %d !\n", childForExecutingCommands);
 		terminatedChild = wait( &terminationStatus );
 		printf("Child Terminated %d \n", terminatedChild);
-
+		close(file);
+		dup2(stdoutCopy, 1);
 	}
 }
 

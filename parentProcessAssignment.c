@@ -56,24 +56,24 @@ int main(){
 		for(int i = 0; i<allArgsLength-1; i++){
 			if(strncmp(allArgs[i], ">", strlen(allArgs[i])) == 0){
 				printf("Redirect to file.\n");
-				//printf("%s", allArgs[i+1]);	
+
 				if(allArgs[i+1]!=NULL){
 					redirectToFilePath = (char *)malloc(sizeof(allArgs[i+1]));	
 					strcpy(redirectToFilePath, allArgs[i+1]);
 				}
-				//printf("%s", redirectToFilePath);	
-				int file = open( redirectToFilePath, O_WRONLY | O_CREAT);
-				printf("%d\n", file);
-				write( file , "abcdefgh", 8 );
-
-				//fflush(NULL);
+				printf("%s", allArgs[i]);	
+				allArgsLength = allArgsLength - 2;
+				allArgs[allArgsLength-1] = NULL;
+				for(int i=0; i<allArgsLength; i++){
+					printf("%s\n", allArgs[i]);
+				}
 				
 			}
-			if(strncmp(allArgs[i], "<", strlen(allArgs[i])) == 0){
+			else if(strncmp(allArgs[i], "<", strlen(allArgs[i])) == 0){
 				printf("Redirect from file.\n");
 				
 			}
-			if(strncmp(allArgs[i], ">>", strlen(allArgs[i])) == 0){
+			else if(strncmp(allArgs[i], ">>", strlen(allArgs[i])) == 0){
 				printf("Append to File\n");
 				
 			}
