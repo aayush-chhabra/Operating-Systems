@@ -2,8 +2,8 @@
 
 void childTermination()
 {
-		
-		union wait wstat;
+		int wstat;
+		//union wait wstat;
 		pid_t	pid;
 
 		while (1) {
@@ -18,16 +18,23 @@ void childTermination()
 
 }
 
-int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath){
+int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath, int append){
 
 	pid_t childForExecutingCommands, terminatedChild;
-	int terminationStatus, file, stdoutCopy;
+	int terminationStatus, file = 0, stdoutCopy = 0;
 	
 	if(redirectToFilePath != NULL){
-		printf("Write your code here..\n");
+		printf("append was %d\n", append);
 		stdoutCopy = dup(1);
 		close(1);
-		file = open( redirectToFilePath, O_RDWR | O_CREAT, 0660);
+		if(append == 0){
+			printf("Write your code here..\n");
+			file = open( redirectToFilePath, O_RDWR | O_CREAT, 0660);	
+		}
+		else{
+			file = open( redirectToFilePath, O_APPEND | O_WRONLY, 0660);
+		}
+		
 	}
 	
 	printf( "found %s \n", executableCommandFilePath );
@@ -49,18 +56,24 @@ int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char
 		printf("In Parent, child's PID %d !\n", childForExecutingCommands);
 		terminatedChild = wait( &terminationStatus );
 		printf("Child Terminated %d \n", terminatedChild);
-		close(file);
-		dup2(stdoutCopy, 1);
+		if(file)
+			close(file);	
+		if (stdoutCopy)
+			dup2(stdoutCopy, 1);
 	}
+	return 0;
 }
 
-int backgroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath){
+int backgroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath, int append){
 
 	pid_t childForExecutingCommands, terminatedChild;
 	int terminationStatus;
 	
 	if(redirectToFilePath != NULL){
 		printf("Write your code here..\n");
+
+
+		// to do, all the redirection and stuff
 	}
 	
 
@@ -83,4 +96,5 @@ int backgroundProcess(char * executableCommandFilePath, char* allArgs[100], char
 	else{
 		printf("[process running in background with pid %d]\n", childForExecutingCommands);
 	}
+	return 0;
 }

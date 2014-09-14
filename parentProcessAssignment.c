@@ -16,7 +16,7 @@ int main(){
 	char history[MAX_LENGTH][1000], *redirectToFilePath;
 	char * executableCommandFilePath;
 	pid_t childForExecutingCommands, terminatedChild;
-	int terminationStatus, errorCheck;
+	int terminationStatus, errorCheck, append = 0;
 
 	//gets the environment from the environment variable $MYPATH
 	getEnvironments = getenv("MYPATH");
@@ -27,6 +27,7 @@ int main(){
 		fgets(choice, 1000, stdin);
 		rebuildCommand:
 		redirectToFilePath = NULL;
+		append = 0;
 		allArgsLength = 0;
 		signal(SIGCHLD, SIG_DFL);
 		//store the command in the history and increment the length of the array by 1. If the length reaches 1000, increment the start
@@ -55,7 +56,7 @@ int main(){
 
 		for(int i = 0; i<allArgsLength-1; i++){
 			
-			if(strncmp(allArgs[i], ">", strlen(allArgs[i])) == 0){
+			if(strncmp(allArgs[i], ">", 1) == 0){
 				printf("Redirect to file.\n");
 
 				if(allArgs[i+1]!=NULL){
@@ -70,7 +71,7 @@ int main(){
 				}
 
 			}
-			else if(strncmp(allArgs[i], "<", strlen(allArgs[i])) == 0){
+			else if(strncmp(allArgs[i], "<", 1) == 0){
 				printf("Redirect from file.\n");
 				if(allArgs[i+1]!=NULL){
 					printf("%s\n", allArgs[i+1]);
@@ -96,9 +97,19 @@ int main(){
 				}
 				
 			}
-			else if(strncmp(allArgs[i], ">>", strlen(allArgs[i])) == 0){
+			else if(strncmp(allArgs[i], ">>", 2) == 0){
 				printf("Append to File\n");
-				
+				if(allArgs[i+1]!=NULL){
+					redirectToFilePath = (char *)malloc(sizeof(allArgs[i+1]));	
+					strcpy(redirectToFilePath, allArgs[i+1]);
+				}
+				printf("%s", allArgs[i]);	
+				allArgsLength = allArgsLength - 2;
+				allArgs[allArgsLength-1] = NULL;
+				for(int i=0; i<allArgsLength; i++){
+					printf("%s\n", allArgs[i]);
+				}
+				append = 1;
 			}
 		}
 		
@@ -193,12 +204,12 @@ int main(){
 				--allArgsLength;
 
 
-				backgroundProcess(executableCommandFilePath, allArgs, redirectToFilePath);
+				backgroundProcess(executableCommandFilePath, allArgs, redirectToFilePath, append);
 				
 			}
 			else{
 				
-				foregroundProcess(executableCommandFilePath, allArgs, redirectToFilePath);
+				foregroundProcess(executableCommandFilePath, allArgs, redirectToFilePath, append);
 			}
 			
 		}
