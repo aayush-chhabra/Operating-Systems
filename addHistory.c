@@ -70,13 +70,15 @@ char *trimwhitespace(char *str)
 char * searchInPath(char *command, char* environments){
 	
 
-	//printf("back !! %s ------------------------>>>>>\n", command);
+	
 	char *environmentsTokenized[100], tempToReturnPath[1000];   //stores all the paths in a char *, and array of all the paths in the MYPATH variable
 	char *environmentsSeperate;			//intermediate variable, which is of no use after the parsing of paths is done.
 	int environmentsLength = 0;			//The length of the paths array. The total number of paths in MYPATH.
 	DIR * dir;
 	
 	//get all the paths into an array.
+	char tempEnvironment[1000];
+	strcpy(tempEnvironment, environments);
 	environmentsSeperate = strtok(environments, ":");
 	while(environmentsSeperate != NULL){
 		environmentsTokenized[environmentsLength] = environmentsSeperate;
@@ -84,11 +86,15 @@ char * searchInPath(char *command, char* environments){
 		environmentsLength++;
 	}
 
+	// for(int i=0; i<environmentsLength; i++){
+	// 	printf("%s\n", environmentsTokenized[i]);
+	// }
 
 	for(int i=0; i<environmentsLength; i++){
 		
 		//open every directory mentioned in the MYPATH environment variable. 
 		dir = opendir( environmentsTokenized[i] );
+		//printf("%s\n", environmentsTokenized[i]);
 
 		//if opendir is not able to open the directory.
 		if ( dir == NULL )
@@ -108,7 +114,8 @@ char * searchInPath(char *command, char* environments){
 		}
 		if(file == NULL){
 			//printf("back !! %s ------------------------>>>>>\n", command);
-			return NULL;
+			//strcpy(environments, tempEnvironment);
+			continue;
 		}
 		else{
 			
@@ -116,9 +123,11 @@ char * searchInPath(char *command, char* environments){
 			strcpy(tempToReturnPath, environmentsTokenized[i]);
 			strcat(tempToReturnPath, "/");
 			strcat(tempToReturnPath, command);
+			strcpy(environments, tempEnvironment);
 			return tempToReturnPath;
 		}
 
 	}
+	strcpy(environments, tempEnvironment);
 	return NULL;
 }

@@ -3,7 +3,6 @@
 void childTermination()
 {
 		int wstat;
-		//union wait wstat;
 		pid_t	pid;
 
 		while (1) {
@@ -15,13 +14,13 @@ void childTermination()
 			else
 				printf ("[process %d completed]\n", pid);
 		}
-
 }
 
 int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char * redirectToFilePath, int append){
 
 	pid_t childForExecutingCommands, terminatedChild;
 	int terminationStatus, file = 0, stdoutCopy = 0;
+	
 	
 	if(redirectToFilePath != NULL){
 		printf("append was %d\n", append);
@@ -49,6 +48,8 @@ int foregroundProcess(char * executableCommandFilePath, char* allArgs[100], char
 		printf("I am in Child!\n");
 		execv(executableCommandFilePath, allArgs);
 		printf("Exec troubles\n");
+
+
 		return 12;
 	}
 	
@@ -90,6 +91,7 @@ int backgroundProcess(char * executableCommandFilePath, char* allArgs[100], char
 	if(childForExecutingCommands==0){
 		printf("I am in Child!\n");
 		execv(executableCommandFilePath, allArgs);
+
 		printf("Exec troubles\n");
 		return 12;
 	}

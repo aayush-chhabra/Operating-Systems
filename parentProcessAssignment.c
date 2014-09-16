@@ -55,6 +55,15 @@ int main(){
 		}
 
 		for(int i = 0; i<allArgsLength-1; i++){
+			if(strncmp(allArgs[i], "|", 1) == 0){
+				// I am here
+				printf("I have a PIPE\n");
+
+			}
+		}
+
+
+		for(int i = 0; i<allArgsLength-1; i++){
 			
 			if(strncmp(allArgs[i], ">", 1) == 0){
 				printf("Redirect to file.\n");
@@ -190,7 +199,6 @@ int main(){
 		executableCommandFilePath = searchInPath(allArgs[0], getEnvironments);
 		if(executableCommandFilePath != NULL){
 			executableCommandFilePath = trimwhitespace(executableCommandFilePath);
-
 		}
 
 		if(executableCommandFilePath == NULL)
@@ -203,7 +211,7 @@ int main(){
 				allArgs[allArgsLength-2] = NULL;
 				--allArgsLength;
 
-
+				printf("%s\n", executableCommandFilePath);
 				backgroundProcess(executableCommandFilePath, allArgs, redirectToFilePath, append);
 				
 			}
